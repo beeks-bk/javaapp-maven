@@ -1,32 +1,23 @@
-pipeline {
+pipeline{
     agent any
-
-    tools {
-        maven 'mvn'
-    }
-
-    stages {
-
-        stage('retrieving code') {
-            steps {
-                git branch: 'main',
-                    url: 'https://github.com/beeks-bk/javaapp-maven.git'
+    
+    stages{
+        stage('retrieve code from Github'){
+            steps{
+                git branch: 'main', url: 'https://github.com/beeks-bk/javaapp-maven.git'
             }
         }
-
-        stage('Maven Build') {
-            steps {
+        stage('build using Maven'){
+            steps{
                 bat 'mvn clean package'
             }
         }
-
-        stage('Maven test') {
-            steps {
+        stage('test using maven'){
+            steps{
                 bat 'mvn test'
             }
         }
-
-        stage('SonarQube Analysis') {
+       stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     withCredentials([string(credentialsId: 'sonartoken', variable: 'SONAR_TOKEN')]) {
@@ -35,17 +26,16 @@ pipeline {
                 }
             }
         }
-
-        stage('Docker Build') {
-    steps {
-        bat '"C:\\Users\\ADMIN\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe" build -t javaapp .'
+    stage('Docker Build') {
+        steps {
+             bat 'docker build -t javaapp .'
     }
 }
 
-stage('Trivy Scan') {
-    steps {
-        bat 'trivy.exe image --timeout 10m javaapp:latest'
+        stage('Scanning vulnerabilities using Trivy') {
+             steps {
+                  bat 'trivy.exe image --timeout 10m javaapp:latest'
+             }
     }
-}
     }
 }
